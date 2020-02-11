@@ -1,6 +1,6 @@
 # indoors-floor-filter-js
 
-This is an ArcGIS API for JavaScript widget that lets you filter ArcGIS Indoors data to view a selected facility (building) and level (floor). Learn about ArcGIS Indoors and the ArcGIS Indoors Information Model (AIIM) [here](https://pro.arcgis.com/en/pro-app/help/data/indoors/get-started-with-arcgis-indoors.htm).
+This is an ArcGIS API for JavaScript widget that lets you filter ArcGIS Indoors data to view a selected facility (building) and level (floor). Learn about ArcGIS Indoors and the ArcGIS Indoors Information Model [here](https://pro.arcgis.com/en/pro-app/help/data/indoors/get-started-with-arcgis-indoors.htm).
 
 ![demo video](./indoors-floorfilter-js-doc-video-demo02.gif "demo video")
 
@@ -11,21 +11,21 @@ This is an ArcGIS API for JavaScript widget that lets you filter ArcGIS Indoors 
 * Configurable style and behaviors
 
 ## Requirements
-* An existing ArcGIS API for JavaScript 3.x mapping application. *(Support for the 4.x API coming soon)*
-* A map containing layers that conform to the [ArcGIS Indoors Information Model (AIIM) feature classes](https://pro.arcgis.com/en/pro-app/help/data/indoors/arcgis-indoors-information-model.htm#ESRI_SECTION1_E6F8CE6530DE4D0B94CA289D3A4CFA52).
+* An existing ArcGIS API for JavaScript 3.x or 4.x mapping application.
+* A map containing layers that conform to the [ArcGIS Indoors Information Model feature classes](https://pro.arcgis.com/en/pro-app/help/data/indoors/arcgis-indoors-information-model.htm#ESRI_SECTION1_E6F8CE6530DE4D0B94CA289D3A4CFA52).
     * Sample ArcGIS Indoors data is available for download from [My Esri](https://my.esri.com/). For more information, see the ArcGIS Pro Help: [Download and install ArcGIS Indoors](https://pro.arcgis.com/en/pro-app/help/data/indoors/download-and-install-arcgis-indoors.htm)
-    * At minimum, the widget requires a layer that conforms to the [AIIM Levels feature class](https://pro.arcgis.com/en/pro-app/help/data/indoors/arcgis-indoors-information-model.htm#ESRI_SECTION2_31525AA777E54CDD884C7F2B31F7D51B).
-    * Certain widget functions require a layer that conforms to the [AIIM Facilities feature class](https://pro.arcgis.com/en/pro-app/help/data/indoors/arcgis-indoors-information-model.htm#ESRI_SECTION2_B7500B49156641338AADC25F6113607D). Such functions include highlighting when hovering over a facility polygon, or clicking on a facility polygon to activate it in the widget.
+    * At minimum, the widget requires a layer with polygon features representing floor footprints, such as the Indoors model's [Levels feature class](https://pro.arcgis.com/en/pro-app/help/data/indoors/arcgis-indoors-information-model.htm#ESRI_SECTION2_31525AA777E54CDD884C7F2B31F7D51B). This layer must have attributes indicating the facility (building) and level (floor) of each feature. If using a layer that does not conform to the Indoors Model, use the `layerMappings` parameter to map the attributes.  
+    * Certain widget functions require a layer with polygon features representing building footprints, such as the Indoors model's [Facilities feature class](https://pro.arcgis.com/en/pro-app/help/data/indoors/arcgis-indoors-information-model.htm#ESRI_SECTION2_B7500B49156641338AADC25F6113607D). Such functions include highlighting when hovering over a facility polygon, or clicking on a facility polygon to activate it in the widget. The building footprints layer must have attributes indicating the facility of each feature. If using a layer that does not conform to the Indoors Model, use the `layerMappings` parameter to map the attributes.
 
 ## Instructions
 1. Download and unzip the .zip file.
 1. Copy/paste the `floorfilter` folder into your own project folder.
 1. In your app:
-    1. Below the existing `<link>` tag that references `esri.css`, add a `<link>` to reference the `floorfilter/style/main.css` file.
+    1. Below the last existing `<link>` tag that references an Esri `.css`, add a `<link>` to reference the `floorfilter/style/main.css` file.
     1. Above the existing `<script>` tag that references the ArcGIS API for JavaScript, add a `<script>` to reference the `floorfilter` folder.
 1. Add and style a `<div>` in which to display the widget.
 1. Add the `floorfilter/FloorFilter` module and alias to your `require()`.
-1. Construct a new instance of FloorFilter with a `map` and other options as desired.
+1. Construct a new instance of FloorFilter.
 
 For additional details, see the Constructor and Code Examples sections, below.
 
@@ -33,21 +33,25 @@ For additional details, see the Constructor and Code Examples sections, below.
 ```
 new FloorFilter(properties);
 ```
-The `properties` object must include a `map`; other properties are optional.
+The `properties` object must include a `map` (if using version 3.x of the JavaScript API) or `view` (if using 4.x); other properties are optional.
 
-| Name                   | Type        | Summary                                                                                                                                                                                                                                                                                                                                                           |
-|------------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `activeFacilityId`     | `String`    | *(optional)* Activates the specified facility when the widget starts. Value must be found in the Facility layer's `facility_id` field. *default=null*                                                                                                                                                                                                             |
-| `activeLevelId`        | `String`    | *(optional)* Activates the specified level when the widget starts. Has no effect if `activeFacilityId` is `null`. Value must be found in the Level layer's `level_id` field. *default=null*                                                                                                                                                                       |
-| `autoZoomOnStart`      | `Boolean`   | *(optional)* Zoom the map to the extent of the activated facility when the widget starts. Has no effect if `activeFacilityId` is `null`. *default=true*                                                                                                                                                                                                           |
-| `facilitiesUrl`        | `String`    | *(optional)* REST service endpoint URL of a Facilities layer. If `null`, widget looks for the layer in the `Map`. *default=null*                                                                                                                                                                                                                                  |
-| `highlightColor`       | `String`    | *(optional)* The outline color used to highlight a facility on mouseover. Value can be a hex string ("#C0C0C0") or a named string ("blue"). *default="#005e95"*                                                                                                                                                                                                   |
-| `layerIdentifiers`     | `Object`    | *(optional)* Maps [ArcGIS Indoors Information Model](https://pro.arcgis.com/en/pro-app/help/data/indoors/arcgis-indoors-information-model.htm) feature classes to layers in your map. *default=* ``` {   "sites": ["Sites"],   "facilities": ["Facilities", "Facilities Textured"],   "levels": ["Levels"],   "units": ["Units"],   "details": ["Details"], } ``` |
-| `levelsUrl`            | `String`    | *(optional)* REST service endpoint URL of a Levels layer. If `null`, widget looks for the layer in the `Map`. *default=null*                                                                                                                                                                                                                                      |
-| `map`                  | `Map` (3.x) | The ArcGIS API for JavaScript 3.x `Map` the widget is associated with.                                                                                                                                                                                                                                                                                            |
-| `toggleFacilityShells` | `Boolean`   | *(optional)* Turn off/on a facility's footprint when the facility is activated/deactivated. *default=true*                                                                                                                                                                                                                                                        |
-| `watchFacilityClick`   | `Boolean`   | *(optional)* Activate a facility when the user clicks on its footprint. *default=true*                                                                                                                                                                                                                                                                            |
-| `watchFacilityHover`   | `Boolean`   | *(optional)* Highlight a facility when the user hovers over its footprint. *default=true*                                                                                                                                                                                                                                                                         |
+| Name                   | Type                     | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+|------------------------|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `activeFacilityId`     | `String`                 | *(optional)* Activates the specified facility when the widget starts. Value must be found in the Facility layer's `facility_id` field. *default=null*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `activeLevelId`        | `String`                 | *(optional)* Activates the specified level when the widget starts. Has no effect if `activeFacilityId` is `null`. Value must be found in the Level layer's `level_id` field. *default=null*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `autoZoomOnStart`      | `Boolean`                | *(optional)* Zoom the map to the extent of the activated facility when the widget starts. Has no effect if `activeFacilityId` is `null`. *default=true*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `facilitiesUrl`        | `String`                 | *(optional)* REST service endpoint URL of a Facilities layer. If `null`, widget looks for the layer in the map or scene. *default=null*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `highlightColor`       | `String`                 | *(optional)* The outline color used to highlight a facility on mouseover. Value can be a hex string ("#C0C0C0") or a named string ("blue"). *default="#005e95"*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `highlightFacility2D`  | `Boolean`                | *(optional)* Outline the active facility using the highlightColor when viewing a 2D map. *default=true*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `layerIdentifiers`     | `Object`                 | *(optional)* Maps [ArcGIS Indoors Information Model](https://pro.arcgis.com/en/pro-app/help/data/indoors/arcgis-indoors-information-model.htm) feature classes to layers in your map. *default=* ``` {   "sites": ["Sites"],   "facilities": ["Facilities", "Facilities Textured"],   "levels": ["Levels"],   "units": ["Units"],   "details": ["Details"], } ```                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `layerMappings`        | `Object`                 | *(optional)* Maps [ArcGIS Indoors Information Model](https://pro.arcgis.com/en/pro-app/help/data/indoors/arcgis-indoors-information-model.htm) feature class attributes to attributes in your layers. If `null`, widget looks for attributes that conform to the Indoors Model. <br/>*default=null* <br/> <br/>Object structure:<br/>`"layerMappings": [`<br/>&nbsp;&nbsp;&nbsp;`{`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`"layerTitle": "",`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`"mappings": {`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`"facilityIdField": "",`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`"facilityNameField": "",`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`"levelIdField": "",`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`"levelNameField": "",`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`"levelNumberField": "",`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`"verticalOrderField": ""`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`}`<br/>&nbsp;&nbsp;&nbsp;`}`<br/>`]`<br/><br/>The Floor Filter widget requires either a `facility_id` or `facility_name` attribute to determine the facility (building) to which a feature belongs. To filter a layer's features by facility when the layer has neither of those attributes, use `layerMappings` to map one of the layer's existing fields. <br/><br/>Similarly, the widget requires one of the following attributes to determine the level (floor) to which a feature belongs: `levelIdField`, `levelNameField`, `levelNumberField`, or `verticalOrderField`. To make the widget filter a layer's features by level when those attributes are not present, use `layerMappings` to map one of the layer's existing fields. <br/><br/>For example, if you have an "Assets" layer with a "Building" field indicating the name of the facility in which each asset is located, and a "Floor" field indicating the level number on which each asset is located, construct the `layerMappings` object like this: <br/><br/>`"layerMappings": [`<br/>&nbsp;&nbsp;&nbsp;`{`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`"layerTitle": "Assets",`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`"mappings": {`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`"facilityNameField": "Building",`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`"levelNumberField": "Floor"`<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`}`<br/>&nbsp;&nbsp;&nbsp;`}`<br/>`]` |
+| `levelsUrl`            | `String`                 | *(optional)* REST service endpoint URL of a Levels layer. If `null`, widget looks for the layer in the map or scene. *default=null*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `map`                  | `Map`                    | The ArcGIS API for JavaScript 3.x `Map` with which the widget is associated.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `showAllFloorPlans2D`  | `Boolean`                | *(optional)* Show floor plans for all facilities when viewing a 2D map. The active facility will show the selected level; other facilities will show the level where VERTICAL_ORDER is 0. *default=true*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `toggleFacilityShells` | `Boolean`                | *(optional)* Turn off/on a facility's footprint when the facility is activated/deactivated. *default=true*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `view`                 | `MapView` or `SceneView` | The ArcGIS API for JavaScript 4.x `MapView` or `SceneView` with which the widget is associated.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `watchFacilityClick`   | `Boolean`                | *(optional)* Activate a facility when the user clicks on its footprint. *default=true*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `watchFacilityHover`   | `Boolean`                | *(optional)* Highlight a facility when the user hovers over its footprint. When widget is associated with a 2D map or view, *default=false*; when associated with a 3D scene, *default=true*.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 ## Code Examples
 
@@ -59,8 +63,8 @@ The `properties` object must include a `map`; other properties are optional.
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no" />
     <title>ArcGIS Indoors - Floorfilter - JSAPI3</title>
-    <link rel="stylesheet" href="https://js.arcgis.com/3.28/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="https://js.arcgis.com/3.28/esri/css/esri.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.31/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.31/esri/css/esri.css">
     <link rel="stylesheet" href="./floorfilter/style/main.css">
     <style>
         html,
@@ -77,6 +81,7 @@ The `properties` object must include a `map`; other properties are optional.
             left: 100px;
         }
     </style>
+    
     <script>
         var dojoConfig = {
             async: true,
@@ -88,7 +93,8 @@ The `properties` object must include a `map`; other properties are optional.
             ]
         };
     </script>
-    <script src="https://js.arcgis.com/3.28/"></script>
+    <script src="https://js.arcgis.com/3.31/"></script>
+    
     <script>
         var map;
         require([
@@ -125,12 +131,89 @@ The `properties` object must include a `map`; other properties are optional.
 ```
 
 #### JavaScript 4.x API
-*Support for ArcGIS API for JavaScript 4.x is coming soon.*
+```javascript
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
+    <title>ArcGIS Indoors - Floorfilter - JSAPI4</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.14/esri/themes/light/main.css"/>
+    <link rel="stylesheet" href="./floorfilter/style/main.css"/>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+      #floorfilter {
+        position: absolute;
+        top: 20px;
+        left: 100px;
+      }
+    </style>
+
+    <script>
+      var dojoConfig = {
+          async: true,
+          packages: [
+              {
+                  name: "floorfilter",
+                  location: location.pathname.replace(/\/[^/]*$/, "") + "/floorfilter"
+              }
+          ]
+      };
+    </script>
+    <script src="https://js.arcgis.com/4.14/"></script>
+
+    <script>
+      require([
+        "esri/views/MapView",
+        "esri/WebMap",
+        "esri/config",
+        "floorfilter/FloorFilter"
+        ], function(MapView, WebMap, esriConfig, FloorFilter) {
+          
+          // Your ArcGIS Indoors web map 
+          var portalUrl = ""; // the web map's hosting portal URL; example: https://myPortal/portal 
+          var webmapId = ""; // the web map's item id
+
+          esriConfig.portalUrl = portalUrl;
+          var webmap = new WebMap({
+            portalItem: {
+              // autocasts as new PortalItem()
+              id: webmapId 
+            }
+          });
+
+          var view = new MapView({
+            map: webmap,
+            container: "viewDiv"
+          });
+
+          var floorFilter = new FloorFilter({
+            view: view
+          }, "floorfilter");
+        }
+      );
+    </script>
+  </head>
+  <body>
+    <div id="viewDiv"></div>
+    <div id="floorfilter"></div>
+  </body>
+</html>
+```
 
 ## Resources
 
 * [Get Started with ArcGIS Indoors](https://pro.arcgis.com/en/pro-app/help/data/indoors/get-started-with-arcgis-indoors.htm)
 * [ArcGIS Indoors Information Model](https://pro.arcgis.com/en/pro-app/help/data/indoors/arcgis-indoors-information-model.htm#ESRI_SECTION1_E6F8CE6530DE4D0B94CA289D3A4CFA52)
+* [ArcGIS API for JavaScript 4.x - API Reference](https://developers.arcgis.com/javascript/latest/)
 * [ArcGIS API for JavaScript 3.x - API Reference](https://developers.arcgis.com/javascript/3/jsapi/)
 
 ## Issues
@@ -140,7 +223,7 @@ Find a bug or want to request a new feature? Please let us know by submitting an
 Anyone and everyone is welcome to contribute.
 
 ## Licensing
-Copyright 2019 Esri
+Copyright 2020 Esri
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

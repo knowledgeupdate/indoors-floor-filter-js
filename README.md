@@ -52,6 +52,11 @@ The `properties` object must include a `map` (if using version 3.x of the JavaSc
 | `view`                 | `MapView` or `SceneView` | The ArcGIS API for JavaScript 4.x `MapView` or `SceneView` with which the widget is associated.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `watchFacilityClick`   | `Boolean`                | *(optional)* Activate a facility when the user clicks on its footprint. *default=true*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `watchFacilityHover`   | `Boolean`                | *(optional)* Highlight a facility when the user hovers over its footprint. When widget is associated with a 2D map or view, *default=false*; when associated with a 3D scene, *default=true*.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+## Functions
+| Name          | Return Type | Summary                                                                                                                                                                                                                                                                            |
+|---------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `onChange()`  | `Object`    | Listen for changes to the widget properties.<br/><br/>`floorFilter.onChange = function(props) {`<br/>&nbsp;&nbsp;`console.log(props);`<br/>`};`<br/><br/>Example output:<br/>`{ facilityId: "CAMPUS.MAIN.ELLIS", levelId: "CAMPUS.MAIN.ELLIS.2" }`                    |
+| `setFacility()` | `undefined` | Set the widget's active facility and/or level. Supported attribute keywords:<br/><ul><li>Facility: `facilityId`, `facilityName`</li><li>Level: `levelId`, `levelName`, `levelNumber`, `verticalOrder`</li></ul>`floorFilter.setFacility({`<br/>&nbsp;&nbsp;`facilityName: "Ellis Hall",`<br/>&nbsp;&nbsp;`levelNumber: 2`<br/>`});` |
 
 ## Code Examples
 
@@ -130,14 +135,14 @@ The `properties` object must include a `map` (if using version 3.x of the JavaSc
 </html>
 ```
 
-#### JavaScript 4.x API
+#### JavaScript 4.x API - WebMap (2D)
 ```javascript
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
-    <title>ArcGIS Indoors - Floorfilter - JSAPI4</title>
+    <title>ArcGIS Indoors - Floorfilter - JSAPI4 - WebMap</title>
 
     <link rel="stylesheet" href="https://js.arcgis.com/4.14/esri/themes/light/main.css"/>
     <link rel="stylesheet" href="./floorfilter/style/main.css"/>
@@ -200,6 +205,97 @@ The `properties` object must include a `map` (if using version 3.x of the JavaSc
           }, "floorfilter");
         }
       );
+    </script>
+  </head>
+  <body>
+    <div id="viewDiv"></div>
+    <div id="floorfilter"></div>
+  </body>
+</html>
+```
+
+#### JavaScript 4.x API - WebScene (3D)
+```javascript
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
+    <title>ArcGIS Indoors - Floorfilter - JSAPI4 - WebScene</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.14/esri/themes/light/main.css"/>
+    <link rel="stylesheet" href="./floorfilter/style/main.css"/>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+      #floorfilter {
+        position: absolute;
+        top: 20px;
+        left: 100px;
+      }
+    </style>
+
+    <script>
+      var dojoConfig = {
+          async: true,
+          packages: [
+              {
+                  name: "floorfilter",
+                  location: location.pathname.replace(/\/[^/]*$/, "") + "/floorfilter"
+              }
+          ]
+      };
+    </script>
+    <script src="https://js.arcgis.com/4.14/"></script>
+
+    <script>
+      require([
+        "esri/views/SceneView", 
+        "esri/WebScene",
+        "esri/config",
+        "esri/portal/Portal",
+        "floorfilter/FloorFilter"], 
+        function(SceneView, WebScene, esriConfig, Portal, FloorFilter) {
+          
+          // Your ArcGIS Indoors web scene
+          var portalUrl = ""; // the web scene's hosting portal URL; example: https://myPortal/portal
+          var websceneId = ""; // the web scene's item id
+          
+          // If your web scene does not contain layers named "Facilities" and "Levels"
+          // (for example, the Facilities layer is named "Facilities Textured"),
+          // the widget must be manually configured with references to those layers.
+          var facilitiesUrl = ""; // REST service endpoint URL of the Facilities layer
+          var levelsUrl = ""; // REST service endpoint URL of the Levels layer
+            
+          esriConfig.portalUrl = portalUrl;
+          var portal = new Portal({
+            url: portalUrl
+          });
+          portal.load().then(function() {
+            var map = new WebScene({
+              portalItem: {id: websceneId}
+            });
+            
+            map.load().then(function(){
+              var view = new SceneView({
+                container: "viewDiv",
+                map: map
+              });
+                
+              var floorFilter = new FloorFilter({
+                view: view,
+                facilitiesUrl: facilitiesUrl,
+                levelsUrl: levelsUrl
+              },"floorfilter");
+            });
+          });
+        });
     </script>
   </head>
   <body>

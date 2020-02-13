@@ -55,8 +55,8 @@ The `properties` object must include a `map` (if using version 3.x of the JavaSc
 ## Functions
 | Name          | Return Type | Summary                                                                                                                                                                                                                                                                            |
 |---------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `onChange()`  | `Object`    | Listen for changes to the widget properties.<br/><br/>`floorFilter.onChange = function(props) {`<br/>&nbsp;&nbsp;`console.log(props);`<br/>`};`<br/><br/>Example output:<br/>`{ facilityId: "CAMPUS.MAIN.ELLIS", levelId: "CAMPUS.MAIN.ELLIS.2" }`                    |
-| `setFacility()` | `undefined` | Set the widget's active facility and/or level. Supported attribute keywords:<br/><ul><li>Facility: `facilityId`, `facilityName`</li><li>Level: `levelId`, `levelName`, `levelNumber`, `verticalOrder`</li></ul>`floorFilter.setFacility({`<br/>&nbsp;&nbsp;`facilityName: "Ellis Hall",`<br/>&nbsp;&nbsp;`levelNumber: 2`<br/>`});` |
+| `onChange`  | `Object`    | Listen for changes to the widget's active facility and/or active level.<br/><br/>`floorFilter.onChange = function(props) {`<br/>&nbsp;&nbsp;`console.log(props);`<br/>`};`<br/><br/>Example output:<br/>`{ facilityId: "CAMPUS.MAIN.ELLIS", levelId: "CAMPUS.MAIN.ELLIS.2" }`                    |
+| `setFacility()` | `undefined` | Set the widget's active facility and/or level. A facility key/value pair is required; a level key/value pair is optional. Supported keywords:<br/><ul><li>Facility: `facilityId`, `facilityName`</li><li>Level: `levelId`, `levelName`, `levelNumber`, `verticalOrder`</li></ul>`floorFilter.setFacility({`<br/>&nbsp;&nbsp;`facilityName: "Ellis Hall",`<br/>&nbsp;&nbsp;`levelNumber: 2`<br/>`});` |
 
 ## Code Examples
 

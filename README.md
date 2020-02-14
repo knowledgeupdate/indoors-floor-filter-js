@@ -267,11 +267,9 @@ The `properties` object must include a `map` (if using version 3.x of the JavaSc
           var portalUrl = ""; // the web scene's hosting portal URL; example: https://myPortal/portal
           var websceneId = ""; // the web scene's item id
           
-          // If your web scene does not contain layers named "Facilities" and "Levels"
-          // (for example, the Facilities layer is named "Facilities Textured"),
-          // the widget must be manually configured with references to those layers.
-          var facilitiesUrl = ""; // REST service endpoint URL of the Facilities layer
-          var levelsUrl = ""; // REST service endpoint URL of the Levels layer
+          // When using a webscene, must point facilitiesUrl and levelsUrl to 2D layers
+          var facilitiesUrl = ""; // REST service endpoint URL of the 2D Facilities layer
+          var levelsUrl = ""; // REST service endpoint URL of the 2D Levels layer
             
           esriConfig.portalUrl = portalUrl;
           var portal = new Portal({

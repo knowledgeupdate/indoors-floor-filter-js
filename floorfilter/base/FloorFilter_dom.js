@@ -57,6 +57,7 @@ function(declare) {
           }
         })
       }
+      this._updateAllButton();
     },
 
     _clearLevels: function() {
@@ -231,6 +232,7 @@ function(declare) {
       };
       btn.appendChild(document.createTextNode(label));
       if (parentNode) parentNode.appendChild(btn);
+      this._updateAllButton(btn);
     },
 
     _renderClear: function(parentNode) {
@@ -401,6 +403,7 @@ function(declare) {
             this._renderAll(parentNode);
           } else {
             ndAll.style.display = "";
+            this._updateAllButton(ndAll);
           }
         } else {
           if (ndAll) ndAll.style.display = "none";
@@ -430,6 +433,7 @@ function(declare) {
         levelId: this._getActiveLevelId()
       };
       context.selectionUtil.selectFacilityLevel(task,criteria);
+      this._updateAllButton();
       this._onChange({
         facilityId: criteria.facilityId,
         levelId: criteria.levelId
@@ -461,6 +465,23 @@ function(declare) {
       const levelData = this._determineLevelDataFromParams(params);
       if (levelData) {
         this._setActiveFacilityId(levelData.facilityId,true,false,levelData);
+      }
+    },
+
+    _updateAllButton: function(btn) {
+      if (!btn) {
+        if (this.context.jsapi.is3D()) {
+          btn = this.domNode.querySelector(".i-floorfilter-all");
+        }
+      }
+      if (btn) {
+        const activeClass = "i-floorfilter-active";
+        const activeLevelId = this._getActiveLevelId();
+        if (!activeLevelId) {
+          btn.classList.add(activeClass);
+        } else {
+          btn.classList.remove(activeClass);
+        }
       }
     },
 

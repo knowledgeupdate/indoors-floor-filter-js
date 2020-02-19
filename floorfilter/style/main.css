@@ -102,3 +102,8 @@
 .i-floorfilter select.i-floorfilter-facilities {
   border-bottom: 1px solid #dfdfdf;
 }
+
+.i-floorfilter.esri-component {
+  box-shadow: none;
+  margin-bottom: 0;
+}

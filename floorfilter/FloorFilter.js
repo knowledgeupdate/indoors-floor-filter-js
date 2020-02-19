@@ -38,13 +38,19 @@ function(req, declare, lang, _WidgetBase, _TemplatedMixin,
     autoZoomOnStart: true,
     facilitiesUrl: null, // required for 3D
     highlightColor: "#005e95", // or this format [0, 255, 255, 0.66]
+    highlightFacility2D: true,
     layerIdentifiers: null,
+    layerMappings: null,
     levelsUrl: null, // required for 3D
     map: null,
+    showAllFloorPlans2D: true,
     toggleFacilityShells: true,
     watchFacilityClick: true,
-    watchFacilityHover: true,
+    watchFacilityHover: null,
     view: null,
+
+    _context: null,
+    _floorFilter_dom: null,
 
     templateString: "<div class='i-floorfilter'></div>",
 
@@ -64,6 +70,16 @@ function(req, declare, lang, _WidgetBase, _TemplatedMixin,
       this.inherited(arguments);
     },
 
+    onChange: function(props) {},
+
+    setFacility: function(params) {
+      if (this._floorFilter_dom) {
+        this._floorFilter_dom._setFacility(params);
+      }
+    },
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
     _init: function() {
 
       //this.activeFacilityId = "ESRI.RED.MAIN.O";
@@ -75,26 +91,28 @@ function(req, declare, lang, _WidgetBase, _TemplatedMixin,
       const hasV4View2D = (this.view && this.view.type === "2d");
       const hasV4View3D = (this.view && this.view.type === "3d");
 
-      if (!hasV3Map) {
-        console.error(msgPrefix+"a version 3.* 'map' is required.");
+      if (!hasV3Map && !hasV4View2D && !hasV4View3D) {
+        console.error(msgPrefix+"a version 3.* 'map', or a version 4.* 'view' is required");
         return;
       }
 
-      // if (!hasV3Map && !hasV4View2D && !hasV4View3D) {
-      //   console.error(msgPrefix+"a version 3.* 'map', or a version 4.* 'view' is required");
-      //   return;
-      // }
+      if (typeof this.watchFacilityHover !== "boolean") {
+        if (hasV4View3D) this.watchFacilityHover = true;
+        else this.watchFacilityHover = false;
+      }
 
       let context = this._context = new Context({
         aiim: null,
         autoZoomOnStart: this.autoZoomOnStart,
         highlightColor: this.highlightColor,
+        highlightFacility2D: this.highlightFacility2D,
         i18n: i18n,
         jsapi: null,
         levels: null,
         map: this.map,
         msgPrefix: msgPrefix,
         selectionUtil: selectionUtil,
+        showAllFloorPlans2D: this.showAllFloorPlans2D,
         toggleFacilityShells: this.toggleFacilityShells,
         util: util,
         view: this.view,
@@ -110,10 +128,13 @@ function(req, declare, lang, _WidgetBase, _TemplatedMixin,
         view: context.view,
       };
 
-      let floorFilter_dom = new FloorFilter_dom({
+      let floorFilter_dom = this._floorFilter_dom = new FloorFilter_dom({
         context: context,
         domNode: this.domNode
       });
+      floorFilter_dom._onChange = (props) => {
+        this.onChange(props);
+      };
 
       let hasFatal = false;
       this._loadContextJsapi(context).then(() => {
@@ -123,9 +144,9 @@ function(req, declare, lang, _WidgetBase, _TemplatedMixin,
           context: context
         });
         context.aiim.configureLayerIdentifiers(this.layerIdentifiers);
+        context.aiim.configureLayerMappings(this.layerMappings) ;
         return context.aiim.load(task);
       }).then(() => {
-        //console.log("Aiim loaded......");
         let url = (this.levelsUrl || context.aiim.getLevelsUrl());
         context.levels = new Levels({
           context: context,
@@ -138,25 +159,20 @@ function(req, declare, lang, _WidgetBase, _TemplatedMixin,
           return context.levels.load(task);
         }
       }).then(() => {
-        //console.log("Levels loaded......");
         let url = (this.facilitiesUrl || context.aiim.getFacilitiesUrl());
         context.facilities = new Facilities({
           context: context,
           url: context.util.checkMixedContent(url)
         });
-        if (!url) {
-          //console.error(context.msgPrefix+"a 'facilitiesUrl' is required.");
-        } else {
+        if (url) {
           if (context.levels && context.levels.hasData()) {
             return context.facilities.load(task);
           }
         }
       }).then(() => {
-        //console.log("Facilities loaded......");
         if (!hasFatal && context.levels) {
           if (context.levels.hasData()) {
             floorFilter_dom.startup();
-            //console.log(context.msgPrefix+"started...");
           } else {
             console.error(context.msgPrefix+"no levels were found");
           }
@@ -170,7 +186,6 @@ function(req, declare, lang, _WidgetBase, _TemplatedMixin,
 
     _loadContextJsapi: function(context) {
       const promise = new Promise((resolve,reject) => {
-        //console.log(req.toUrl("./Jsapi"));
         const {map, view} = context;
         let jsapiPath = null;
         if (map && map.declaredClass === "esri.Map") {
@@ -185,7 +200,6 @@ function(req, declare, lang, _WidgetBase, _TemplatedMixin,
             context.jsapi = new Jsapi({
               context: context
             });
-            //console.log("context.jsapi.isV4",context.jsapi.isV4);
             resolve();
           });
         } else {

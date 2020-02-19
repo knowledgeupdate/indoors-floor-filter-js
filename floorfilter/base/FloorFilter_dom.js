@@ -57,6 +57,7 @@ function(declare) {
           }
         })
       }
+      this._updateAllButton();
     },
 
     _clearLevels: function() {
@@ -79,9 +80,68 @@ function(declare) {
         this._updateFacilitySelect();
         this._renderLevels();
         context.selectionUtil.clearSelectedFacilityLevel(task);
+        context.jsapi.clearFacilityHighlight(task);
+        this._onChange({
+          facilityId: null,
+          levelId: null
+        });
       }
       this._updateClearButton();
       this._scrollIntoView();
+    },
+
+    _determineLevelDataFromParams: function(params) {
+      let facilityData, levelData;
+      const levels = this.context.levels;
+      const facilities = levels && levels.getFacilities();
+      if (params && facilities) {
+        const facilityId = params.facilityId;
+        const facilityName = params.facilityName;
+        const levelId = params.levelId;
+        const levelName = params.levelName;
+        const levelShortName = params.levelShortName;
+        const levelNumber = params.levelNumber;
+        const verticalOrder = params.verticalOrder;
+        const hasFacilityId = (typeof facilityId === "string");
+        const hasFacilityName = (typeof facilityName === "string");
+        const hasLevelId = (typeof levelId === "string");
+        const hasLevelName = (typeof levelName === "string");
+        const hasLevelShortName = (typeof levelShortName === "string");
+        const hasLevelNumber = (typeof levelNumber === "number");
+        const hasVerticalOrder = (typeof verticalOrder === "number");
+        facilities.some(data => {
+          let matched = false;
+          if (hasFacilityId) {
+            matched = (facilityId === data.facilityId);
+          } else if (hasFacilityName) {
+            matched = (facilityName === data.facilityName);
+          }
+          if (matched) facilityData = data;
+          return matched;
+        });
+        if (facilityData) {
+          if (facilityData.levels) {
+            facilityData.levels.some(data => {
+              let matched = false;
+              if (hasLevelId) {
+                matched = (levelId === data.levelId);
+              } else if (hasLevelName) {
+                matched = (levelName === data.levelName);
+              } else if (hasLevelShortName) {
+                matched = (levelShortName === data.levelShortName);
+              } else if (hasLevelNumber) {
+                matched = (levelNumber === data.levelNumber);
+              } else if (hasVerticalOrder) {
+                matched = (verticalOrder === data.verticalOrder);
+              }
+              if (matched) levelData = data;
+              return matched;
+            });
+          }
+          if (!levelData) levelData = levels.getBaseLevel(facilityData.facilityId);
+        }
+      }
+      return levelData;
     },
 
     _getActiveFacilityId: function() {
@@ -110,6 +170,23 @@ function(declare) {
       return !!facilityData;
     },
 
+    _highlightFacility: function(facilityId) {
+      const context = this.context;
+      if (context.highlightFacility2D && context.facilities) {
+        const facility = context.facilities.findFeatureById(facilityId);
+        const task = {
+          context: context,
+          map: context.map,
+          view: context.view
+        };
+        if (facility) {
+          context.jsapi.addFacilityHighlight(task,facility,facilityId);
+        } else {
+          context.jsapi.clearFacilityHighlight(task);
+        }
+      }
+    },
+
     _makeTestLevels: function(facilityId,levels) {
       if (facilityId === "ESRI.RED.MAIN.O") {
         if (this._tmpTestLevels) return this._tmpTestLevels;
@@ -132,6 +209,8 @@ function(declare) {
       return levels;
     },
 
+    _onChange: function(props) {},
+
     _render: function() {
       const domNode = this.domNode;
       this._renderFacilities(domNode);
@@ -153,6 +232,7 @@ function(declare) {
       };
       btn.appendChild(document.createTextNode(label));
       if (parentNode) parentNode.appendChild(btn);
+      this._updateAllButton(btn);
     },
 
     _renderClear: function(parentNode) {
@@ -251,7 +331,7 @@ function(declare) {
 
     _renderLevel: function(parentNode,levelData,isLast) {
       const activeClass = "i-floorfilter-active";
-      const name = levelData.shortName;
+      const name = levelData.levelShortName;
       const item = document.createElement("li");
       const btn = document.createElement("button");
       const activeLevelId = this._getActiveLevelId();
@@ -323,6 +403,7 @@ function(declare) {
             this._renderAll(parentNode);
           } else {
             ndAll.style.display = "";
+            this._updateAllButton(ndAll);
           }
         } else {
           if (ndAll) ndAll.style.display = "none";
@@ -352,11 +433,18 @@ function(declare) {
         levelId: this._getActiveLevelId()
       };
       context.selectionUtil.selectFacilityLevel(task,criteria);
+      this._updateAllButton();
+      this._onChange({
+        facilityId: criteria.facilityId,
+        levelId: criteria.levelId
+      });
     },
 
-    _setActiveFacilityId: function(facilityId,apply,fromFacilitySelect) {
+    _setActiveFacilityId: function(facilityId,apply,fromFacilitySelect,levelData) {
       let levelId = null;
-      if (!this.context.jsapi.is3D()) {
+      if (levelData && levelData.levelId) {
+        levelId = levelData.levelId;
+      } else if (!this.context.jsapi.is3D()) {
         levelId = this.context.levels.getBaseLevelId(facilityId);
       }
       const activeFacilityInfo = this._getActiveFacilityInfo();
@@ -369,6 +457,31 @@ function(declare) {
         this._renderLevels();
         this._updateClearButton();
         this._scrollIntoView();
+        this._highlightFacility(facilityId);
+      }
+    },
+
+    _setFacility: function(params) {
+      const levelData = this._determineLevelDataFromParams(params);
+      if (levelData) {
+        this._setActiveFacilityId(levelData.facilityId,true,false,levelData);
+      }
+    },
+
+    _updateAllButton: function(btn) {
+      if (!btn) {
+        if (this.context.jsapi.is3D()) {
+          btn = this.domNode.querySelector(".i-floorfilter-all");
+        }
+      }
+      if (btn) {
+        const activeClass = "i-floorfilter-active";
+        const activeLevelId = this._getActiveLevelId();
+        if (!activeLevelId) {
+          btn.classList.add(activeClass);
+        } else {
+          btn.classList.remove(activeClass);
+        }
       }
     },
 
